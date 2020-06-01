@@ -2,7 +2,7 @@
 using System;
 using System.Text;
 
-namespace Client
+namespace Tests
 {
     public class Graphical
     {

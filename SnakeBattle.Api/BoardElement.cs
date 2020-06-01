@@ -125,6 +125,5 @@
         EnemyBodyLeftUp = (short)'┘',
         EnemyBodyRightDown = (short)'┌',
         EnemyBodyRightUp = (short)'└',
-        EnemyBodyAbstract,
     }
 }

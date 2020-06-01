@@ -18,7 +18,7 @@ namespace SnakeBattle.Api.Clients
         {
             _callback = callback;
 
-            var server = url.Replace("http", "ws").Replace("board/player/", "ws?user=").Replace("?code=", "&code=");
+            server = url.Replace("http", "ws").Replace("board/player/", "ws?user=").Replace("?code=", "&code=");
             this._socket = new WebSocket(server);
 
             _socket.OnMessage += Socket_OnMessage;

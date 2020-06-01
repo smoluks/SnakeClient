@@ -1,4 +1,6 @@
-﻿namespace SnakeBattle.Api
+﻿using System;
+
+namespace SnakeBattle.Api
 {
     public struct Element
     {

@@ -12,7 +12,7 @@ namespace Client
         internal static void SetState(BoardElement eatedElement, SnakeAction action)
         {
             if (eatedElement == BoardElement.FuryPill)
-                rageCount += 15;
+                rageCount += 9;
             else if (rageCount > 0)
             {
                 rageCount--;

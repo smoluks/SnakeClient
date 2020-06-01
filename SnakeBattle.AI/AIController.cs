@@ -3,11 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Client.AI
+namespace SnakeBattle.AI
 {
-    internal class AIController
+    public class AIController
     {
-        internal static int maxDeep = 10;
+        public static int maxDeep = 10;
         public static async Task<SnakeAction?> GetOptimalActionAsync(GameBoard gameBoard, SnakeAction lastMove)
         {
             var tasks = new Dictionary<Task<long>, SnakeAction>();
@@ -33,7 +33,11 @@ namespace Client.AI
                 var completedTask = await Task.WhenAny(tasks.Keys);
 
                 var action = tasks[completedTask];
-                var weight = completedTask.Result;
+                long weight;
+                if (completedTask.IsFaulted)
+                    weight = long.MinValue;
+                else
+                    weight = completedTask.Result;
 
 #if (DEBUG)
                 Console.WriteLine($"{action} {weight}");
@@ -70,10 +74,11 @@ namespace Client.AI
                 return currentRate;
 
             //move me
-            var newGameBoard = Movement.MakeMyMove(gameBoard, action, ref newHead);
+            var newGameBoard = new GameBoard(gameBoard);
+            Movement.MakeMyMove(newGameBoard, action, ref newHead);
 
             //add enemy predictions
-            Movement.MakeEnemyMove(newGameBoard);
+            //Movement.MakeEnemyMove(newGameBoard);
 
             //calculate my variants
             var tasks = new List<Task<long>>();

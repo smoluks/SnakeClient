@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 namespace SnakeBattle.Api
 {
@@ -121,6 +120,8 @@ namespace SnakeBattle.Api
             HasStone = board.HasStone;
 
             MyLength = board.MyLength;
+
+            Nyamka = board.Nyamka;
         }
     }
 }

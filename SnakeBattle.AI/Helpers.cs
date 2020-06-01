@@ -1,8 +1,9 @@
 ﻿using SnakeBattle.Api;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
-namespace Client.AI
+namespace SnakeBattle.AI
 {
     static class Helpers
     {     
@@ -57,6 +58,23 @@ namespace Client.AI
             return new Element(-1, -1);
         }
 
+        internal static Element FindNear(GameBoard gameBoard, int x, int y, BoardElement[] elements)
+        {
+            if (x != 0 && elements.Contains(gameBoard.Board[x - 1, y]))
+                return new Element(x - 1, y);
+
+            if (x != gameBoard.Size - 1 && elements.Contains(gameBoard.Board[x + 1, y]))
+                return new Element(x + 1, y);
+
+            if (y != 0 && elements.Contains(gameBoard.Board[x, y - 1]))
+                return new Element(x, y - 1);
+
+            if (y != gameBoard.Size - 1 && elements.Contains(gameBoard.Board[x, y + 1]))
+                return new Element(x, y + 1);
+
+            return new Element(-1, -1);
+        }
+
         internal static List<Element> FindAllNear(GameBoard board, int x, int y, BoardElement element)
         {
             var result = new List<Element>();
@@ -76,53 +94,38 @@ namespace Client.AI
             return result;
         }
 
-        internal static (int length, bool rage) GetEvilShake(int x, int y, GameBoard gameBoard)
+        internal static bool IsNear(GameBoard gameBoard, int x, int y, BoardElement[] elements)
         {
+            if (x != 0 && elements.Contains(gameBoard.Board[x - 1, y]))
+                return true;
 
-            //var el = gameBoard.Board[newHead.X, newHead.Y];
-            //if (!Lists.IsEnemyHead(el) && !Lists.IsEnemyBody(el) && !Lists.IsEnemyTail(el))
-            //    return (-1, false);
+            if (x != gameBoard.Size - 1 && elements.Contains(gameBoard.Board[x + 1, y]))
+                return true;
 
-            bool isEvil = false;
-            var snakePart = new HashSet<int>();
-            GetEvilShakeInternal(gameBoard, x, y, ref snakePart, ref isEvil);
+            if (y != 0 && elements.Contains(gameBoard.Board[x, y - 1]))
+                return true;
 
-            return (snakePart.Count, isEvil);
+            if (y != gameBoard.Size - 1 && elements.Contains(gameBoard.Board[x, y + 1]))
+                return true;
+
+            return false;
         }
 
-        private static void GetEvilShakeInternal(GameBoard gameBoard, int checkPositionX, int checkPositionY, ref HashSet<int> snakePart, ref bool evil)
+        internal static bool IsNear(GameBoard gameBoard, int x, int y, BoardElement element)
         {
-            snakePart.Add((checkPositionY << 8) + checkPositionX);
+            if (x != 0 && gameBoard.Board[x - 1, y] == element)
+                return true;
 
-            for (int x = -1; x < 2; x++)
-            {
-                for (int y = -1; y < 2; y++)
-                {
-                    if(x == 0 && y == 0)
-                        continue;
+            if (x != gameBoard.Size - 1 && gameBoard.Board[x - 1, y] == element)
+                return true;
 
-                    int newX = checkPositionX + x;
-                    int newY = checkPositionY + y;
+            if (y != 0 && gameBoard.Board[x - 1, y] == element)
+                return true;
 
-                    if (newX < 0 || newY < 0 || newX >= gameBoard.Size || newY >= gameBoard.Size)
-                        continue;
+            if (y != gameBoard.Size - 1 && gameBoard.Board[x - 1, y] == element)
+                return true;
 
-                    var el = gameBoard.Board[newX, newY];
-                    if (!Lists.IsEnemyHead(el) && !Lists.IsEnemyBody(el) && !Lists.IsEnemyTail(el))
-                        continue;
-
-                    if (snakePart.Contains((newY << 8) + newX))
-                        continue;
-
-                    if (Lists.IsEnemyHead(el))
-                        evil = el == BoardElement.EnemyHeadEvil;
-
-                    GetEvilShakeInternal(gameBoard, newX, newY, ref snakePart, ref evil);
-                }
-            }
-
-            return;
+            return false;
         }
-
     }
 }

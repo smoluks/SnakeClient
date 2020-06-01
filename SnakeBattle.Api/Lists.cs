@@ -2,7 +2,7 @@
 {
     public static class Lists
     {
-        public static readonly BoardElement[] evilHeads = new BoardElement[] {
+        public static readonly BoardElement[] enemyHeads = new BoardElement[] {
             BoardElement.EnemyHeadDown,
             BoardElement.EnemyHeadLeft,
             BoardElement.EnemyHeadRight,
@@ -19,7 +19,7 @@
                 (el == BoardElement.EnemyHeadEvil);
         }
 
-        public static readonly BoardElement[] evilBodies = new BoardElement[] {
+        public static readonly BoardElement[] enemyBodies = new BoardElement[] {
             BoardElement.EnemyBodyHorizontal,
             BoardElement.EnemyBodyVertical,
             BoardElement.EnemyBodyLeftDown,
@@ -35,8 +35,7 @@
                 (el == BoardElement.EnemyBodyLeftDown) ||
                 (el == BoardElement.EnemyBodyLeftUp) ||
                 (el == BoardElement.EnemyBodyRightDown) ||
-                (el == BoardElement.EnemyBodyRightUp) ||
-                (el == BoardElement.EnemyBodyAbstract);
+                (el == BoardElement.EnemyBodyRightUp);
         }
 
         public static readonly BoardElement[] evilTails = new BoardElement[] {
@@ -73,7 +72,7 @@
                 (el == BoardElement.HeadEvil);
         }
 
-        static readonly BoardElement[] bodies = new BoardElement[] {
+        public static readonly BoardElement[] bodies = new BoardElement[] {
             BoardElement.BodyHorizontal,
             BoardElement.BodyVertical,
             BoardElement.BodyLeftDown,
@@ -92,7 +91,7 @@
                 (el == BoardElement.BodyRightUp);
         }
 
-        static readonly BoardElement[] tails = new BoardElement[] {
+        public static readonly BoardElement[] tails = new BoardElement[] {
             BoardElement.TailEndDown,
             BoardElement.TailEndLeft,
             BoardElement.TailEndUp,

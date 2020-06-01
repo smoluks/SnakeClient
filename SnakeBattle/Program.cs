@@ -1,4 +1,4 @@
-﻿using Client.AI;
+﻿using SnakeBattle.AI;
 using SnakeBattle.Api;
 using SnakeBattle.Api.Clients;
 using System;
