@@ -31,9 +31,7 @@ namespace SnakeBattle.AI
                     GetEnemyShakeInternal(gameBoard, x - 1, y, x, y, out length1, out head1, out evil1);
                     return (0, length1, false);
                 case BoardElement.EnemyHeadEvil:
-                    var body = Helpers.FindNear(gameBoard, x, y, Lists.enemyBodies);
-                    if(body.X == -1)
-                        body = Helpers.FindNear(gameBoard, x, y, Lists.evilTails);
+                    var body = Helpers.FindContinueEvilBody(gameBoard, x, y);
                     GetEnemyShakeInternal(gameBoard, body.X, body.Y, x, y, out length1, out head1, out evil1);
                     return (0, length1, true);
                 //---tails----
@@ -93,7 +91,8 @@ namespace SnakeBattle.AI
                     else
                         return (length2, length1, evil2);
                 default:
-                    throw new Exception("Not a enemy");
+                    //return (0, 0, false);
+                    throw new SnakeException($"Not a enemy at {x}:{y}", gameBoard);
             }
         }
 
@@ -101,6 +100,14 @@ namespace SnakeBattle.AI
         {
             Element e1;
             Element e2;
+            if (x == -1)
+            {
+                //мы уже это слопали
+                length = 0;
+                head = false;
+                evil = false;
+                return;
+            }
 
             var el = gameBoard.Board[x, y];
             switch (el)
@@ -110,6 +117,7 @@ namespace SnakeBattle.AI
                 case BoardElement.EnemyHeadUp:
                 case BoardElement.EnemyHeadLeft:
                 case BoardElement.EnemyHeadRight:
+                case BoardElement.EnemyHeadDead:
                     length = 1;
                     head = true;
                     evil = false;
@@ -154,13 +162,14 @@ namespace SnakeBattle.AI
                     e2 = new Element(x, y - 1);
                     break;
                 default:
+                    //мы уже это слопали
                     length = 0;
                     head = false;
                     evil = false;
                     return;
             }
 
-            if(e1.X != prevx || e1.Y != prevy)
+            if (e1.X != prevx || e1.Y != prevy)
             {
                 GetEnemyShakeInternal(gameBoard, e1.X, e1.Y, x, y, out var length1, out var head1, out var evil1);
 

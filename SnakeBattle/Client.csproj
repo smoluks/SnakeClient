@@ -13,6 +13,10 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\SnakeBattle.AI\SnakeBattle.AI.csproj" />
     <ProjectReference Include="..\SnakeBattle.Api\SnakeBattle.Api.csproj" />

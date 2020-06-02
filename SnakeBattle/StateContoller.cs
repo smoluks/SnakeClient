@@ -33,6 +33,31 @@ namespace Client
 
         internal static void UpdateState(GameBoard gameBoard)
         {
+            if(gameBoard.HeadType == BoardElement.HeadEvil)
+            {
+                //if (rageCount == 0)
+                //    throw new Exception("Evil detect failed");
+
+                switch(LastMove)
+                {
+                    case SnakeAction.Down:
+                        gameBoard.HeadType = BoardElement.HeadDown;
+                        gameBoard.Board[gameBoard.Head.X, gameBoard.Head.Y] = BoardElement.HeadDown;
+                        break;
+                    case SnakeAction.Up:
+                        gameBoard.HeadType = BoardElement.HeadUp;
+                        gameBoard.Board[gameBoard.Head.X, gameBoard.Head.Y] = BoardElement.HeadUp;
+                        break;
+                    case SnakeAction.Left:
+                        gameBoard.HeadType = BoardElement.HeadLeft;
+                        gameBoard.Board[gameBoard.Head.X, gameBoard.Head.Y] = BoardElement.HeadLeft;
+                        break;
+                    case SnakeAction.Right:
+                        gameBoard.HeadType = BoardElement.HeadRight;
+                        gameBoard.Board[gameBoard.Head.X, gameBoard.Head.Y] = BoardElement.HeadRight;
+                        break;
+                }
+            }
             gameBoard.EvilTicks = rageCount;
             gameBoard.HasStone = hasStone;
         }

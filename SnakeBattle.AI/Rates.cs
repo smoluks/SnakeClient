@@ -18,20 +18,13 @@ namespace SnakeBattle.AI
                 if (gameBoard.EvilTicks> 0 && !enemyAgro)
                     return 1000;
 
-                //Если текущая змейка не в ярости, а вражеская в ярости - то текущая змейка умирает.
-                else if (gameBoard.EvilTicks == 0 && enemyAgro)
-                    throw new Exception("Do it in filter!");
-
                 //Если обе змейки в ярости или обе не в ярости - то от каждой отрезаем длину другой змейки. 
                 //То есть, если столкнулись две змейки длиной в 5 и в 7 единиц, то змейка длиной в пять погибает, так как 5-7<2, а змейка длиной в 7 принимает длину 2 единицы.
                 else if ((gameBoard.EvilTicks != 0) == enemyAgro)
                 {
                     var enemy = EnemyDetector.GetEnemyShake(gameBoard, newHead.X, newHead.Y);
 
-                    if (gameBoard.MyLength - (enemy.headLength + enemy.tailLength + 1) < 2)
-                        throw new Exception("Do it in filter!"); 
-
-                    else return (enemy.headLength + enemy.tailLength + 1) * 10;
+                    return (enemy.headLength + enemy.tailLength + 1) * 10;
                 }
             }
 
@@ -50,15 +43,9 @@ namespace SnakeBattle.AI
                 case BoardElement.EnemyBodyRightDown:
                 case BoardElement.EnemyBodyRightUp:
                     //Если таковые имеются, то тогда проверяем, а текущая змейка находится под таблеткой ярости или нет:
-                    if (gameBoard.EvilTicks > 0)
-                    {
                         //4.1.Если да - тогда от вражеской змейки отгрызаем всё от хвоста до места куся.
                         var enemy = EnemyDetector.GetEnemyShake(gameBoard, newHead.X, newHead.Y);
                         return (enemy.tailLength + 1) * 10;
-                    }
-                    else
-                        //4.2. Если нет - то текущая змейка погибает.
-                        throw new Exception("Do it in filter!");
                 //---me---
                 case BoardElement.TailEndDown:
                 case BoardElement.TailEndLeft:
@@ -82,7 +69,7 @@ namespace SnakeBattle.AI
                 case BoardElement.Gold:
                     return 11;
                 case BoardElement.FuryPill:
-                    return 5;
+                    return 3;
                 //
                 default:
                     return long.MinValue;

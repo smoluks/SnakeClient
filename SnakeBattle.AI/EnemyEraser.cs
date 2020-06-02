@@ -12,8 +12,6 @@ namespace SnakeBattle.AI
             bool isTail1;
             bool isTail2;
 
-            gameBoard.Board[x, y] = BoardElement.None;
-
             switch (gameBoard.Board[x, y])
             {
                 //---heads---
@@ -30,9 +28,9 @@ namespace SnakeBattle.AI
                     CleanEnemyShakeInternal(gameBoard, x - 1, y, x, y);
                     break;
                 case BoardElement.EnemyHeadEvil:
-                    var body = Helpers.FindNear(gameBoard, x, y, Lists.enemyBodies);
-                    if(body.X == -1)
-                        body = Helpers.FindNear(gameBoard, x, y, Lists.evilTails);
+                    var body = Helpers.FindContinueEvilBody(gameBoard, x, y);
+                    if (body.X == -1)
+                        break;
 
                     CleanEnemyShakeInternal(gameBoard, body.X, body.Y, x, y);
                     break;
@@ -47,59 +45,95 @@ namespace SnakeBattle.AI
                     isTail1 = IsTail(gameBoard, x - 1, y, x, y, out length1);
                     isTail2 = IsTail(gameBoard, x + 1, y, x, y, out length2);
 
-                    if (isTail1 || length2 < 2)
+                    if (isTail1 || length1 < 2)
                         CleanEnemyShakeInternal(gameBoard, x - 1, y, x, y);
-                    if (isTail2 || length1 < 2)
+                    if (isTail2 || length2 < 2)
                         CleanEnemyShakeInternal(gameBoard, x + 1, y, x, y);
                     break;
                 case BoardElement.EnemyBodyVertical:
                     isTail1 = IsTail(gameBoard, x, y + 1, x, y, out length1);
                     isTail2 = IsTail(gameBoard, x, y - 1, x, y, out length2);
 
-                    if (isTail1 || length2 < 2)
+                    if (isTail1 || length1 < 2)
                         CleanEnemyShakeInternal(gameBoard, x, y + 1, x, y);
-                    if (isTail2 || length1 < 2)
+                    if (isTail2 || length2 < 2)
                         CleanEnemyShakeInternal(gameBoard, x, y - 1, x, y);
                     break;
                 case BoardElement.EnemyBodyLeftDown:
                     isTail1 = IsTail(gameBoard, x - 1, y, x, y, out length1);
                     isTail2 = IsTail(gameBoard, x, y + 1, x, y, out length2);
 
-                    if (isTail1 || length2 < 2)
+                    if (isTail1 || length1 < 2)
                         CleanEnemyShakeInternal(gameBoard, x - 1, y, x, y);
-                    if (isTail2 || length1 < 2)
+                    if (isTail2 || length2 < 2)
                         CleanEnemyShakeInternal(gameBoard, x, y + 1, x, y);
                     break;
                 case BoardElement.EnemyBodyLeftUp:
                     isTail1 = IsTail(gameBoard, x - 1, y, x, y, out length1);
                     isTail2 = IsTail(gameBoard, x, y - 1, x, y, out length2);
 
-                    if (isTail1 || length2 < 2)
+                    if (isTail1 || length1 < 2)
                         CleanEnemyShakeInternal(gameBoard, x - 1, y, x, y);
-                    if (isTail2 || length1 < 2)
+                    if (isTail2 || length2 < 2)
                         CleanEnemyShakeInternal(gameBoard, x, y - 1, x, y);
                     break;
                 case BoardElement.EnemyBodyRightDown:
                     isTail1 = IsTail(gameBoard, x + 1, y, x, y, out length1);
                     isTail2 = IsTail(gameBoard, x, y + 1, x, y, out length2);
 
-                    if (isTail1 || length2 < 2)
+                    if (isTail1 || length1 < 2)
                         CleanEnemyShakeInternal(gameBoard, x + 1, y, x, y);
-                    if (isTail2 || length1 < 2)
+                    if (isTail2 || length2 < 2)
                         CleanEnemyShakeInternal(gameBoard, x, y + 1, x, y);
                     break;
                 case BoardElement.EnemyBodyRightUp:
                     isTail1 = IsTail(gameBoard, x + 1, y, x, y, out length1);
                     isTail2 = IsTail(gameBoard, x, y - 1, x, y, out length2);
 
-                    if (isTail1 || length2 < 2)
+                    if (isTail1 || length1 < 2)
                         CleanEnemyShakeInternal(gameBoard, x + 1, y, x, y);
-                    if (isTail2 || length1 < 2)
+                    if (isTail2 || length2 < 2)
                         CleanEnemyShakeInternal(gameBoard, x, y - 1, x, y);
                     break;
                 default:
                     return;
             }
+
+            gameBoard.Board[x, y] = BoardElement.None;
+
+            //make new tail
+            var n = Helpers.FindEvilBody(gameBoard, x, y);
+            if (n.X == -1)
+            {
+                return;
+            }
+
+            //gameBoard.Board[n.X, n.Y] = BoardElement.None;
+            var n2 = Helpers.FindEvilBody(gameBoard, n.X, n.Y);
+            if (n2.X == -1)
+                return;
+
+            if (n2.X - n.X == 1)
+            {
+                //шея справа
+                gameBoard.Board[n.X, n.Y] = BoardElement.EnemyTailEndLeft;
+            }
+            else if (n2.X - n.X == -1)
+            {
+                //шея слева
+                gameBoard.Board[n.X, n.Y] = BoardElement.EnemyTailEndRight;
+            }
+            else if (n2.Y - n.Y == 1)
+            {
+                //шея снизу
+                gameBoard.Board[n.X, n.Y] = BoardElement.EnemyTailEndUp;
+            }
+            else if (n2.Y - n.Y == -1)
+            {
+                //шея сверху
+                gameBoard.Board[n.X, n.Y] = BoardElement.EnemyTailEndDown;
+            }
+
         }
 
         private static void CleanEnemyShakeInternal(GameBoard gameBoard, int x, int y, int prevx, int prevy)
@@ -157,7 +191,8 @@ namespace SnakeBattle.AI
                     gameBoard.Board[x, y] = BoardElement.None;
                     break;
                 default:
-                    throw new Exception("Not a enemy");
+                    //уже слопали
+                    return;
             }
 
             if (e1.X != prevx || e1.Y != prevy)
@@ -219,19 +254,23 @@ namespace SnakeBattle.AI
                     e2 = new Element(x, y - 1);
                     break;
                 default:
-                    throw new Exception("Not a enemy");
+                    length = 1;
+                    return true;
+                    //Console.Clear();
+                    //Graphical.WriteField(gameBoard);
+                    //throw new Exception("Not a enemy");
             }
 
-            
+
             if (e1.X != prevx || e1.Y != prevy)
             {
-                var r =  IsTail(gameBoard, e1.X, e1.Y, x, y, out length);
+                var r = IsTail(gameBoard, e1.X, e1.Y, x, y, out length);
                 length++;
                 return r;
             }
             else
             {
-                var r =  IsTail(gameBoard, e2.X, e2.Y, x, y, out length);
+                var r = IsTail(gameBoard, e2.X, e2.Y, x, y, out length);
                 length++;
                 return r;
             }

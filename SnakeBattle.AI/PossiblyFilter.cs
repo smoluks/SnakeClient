@@ -7,7 +7,6 @@ namespace SnakeBattle.AI
     {
         public static bool IsMovePossible(GameBoard gameBoard, SnakeAction actionS, SnakeAction lastMoveS, bool real, out Element newHead)
         {
-
             var action = (int)actionS & 0x0F;
             var lastMove = (int)lastMoveS & 0x0F;
 
@@ -53,6 +52,8 @@ namespace SnakeBattle.AI
                             break;
                     }
                     break;
+                case BoardElement.HeadDead:
+                    return false;
             }
 
             //over field
@@ -65,25 +66,11 @@ namespace SnakeBattle.AI
             //stones
             newHead.type = gameBoard.Board[newHead.X, newHead.Y];
 
-            //Console.WriteLine($"{action}: {newHead.X}:{newHead.Y} - {newHeadPoint}");
-
             if (newHead.type == BoardElement.StartFloor || newHead.type == BoardElement.Wall)
                 return false;
 
-            if (gameBoard.EvilTicks == 0 && gameBoard.MyLength < 3 && newHead.type == BoardElement.Stone)
+            if (gameBoard.EvilTicks == 0 && gameBoard.MyLength < 5 && newHead.type == BoardElement.Stone)
                 return false;
-
-            //me
-            if(Lists.IsHead(newHead.type))
-                return false;
-            if (Lists.IsBody(newHead.type) || Lists.IsTail(newHead.type))
-            {
-                var me = MeDetector.GetMe(gameBoard, newHead.X, newHead.Y);
-
-                Console.WriteLine($"Me: {me.tailLength} {me.headLength} {me.rage}");
-                if (me.headLength < 2)
-                    return false;
-            }
 
             //enemies
             if (Lists.IsEnemyHead(newHead.type) || (Lists.IsEnemyBody(newHead.type) && Helpers.IsNear(gameBoard, newHead.X, newHead.Y, Lists.enemyHeads)))
@@ -98,10 +85,9 @@ namespace SnakeBattle.AI
                 //То есть, если столкнулись две змейки длиной в 5 и в 7 единиц, то змейка длиной в пять погибает, так как 5-7<2, а змейка длиной в 7 принимает длину 2 единицы.
                 else if ((gameBoard.EvilTicks != 0) == enemyAgro)
                 {
-                    var enemy = EnemyDetector.GetEnemyShake(gameBoard, newHead.X, newHead.Y);
-                    Console.WriteLine($"Enemy: {enemy.tailLength} {enemy.headLength} {enemy.rage}");
+                    var (headLength, tailLength, _) = EnemyDetector.GetEnemyShake(gameBoard, newHead.X, newHead.Y);
 
-                    if (gameBoard.MyLength - (enemy.headLength + enemy.tailLength + 1) < 2)
+                    if (gameBoard.MyLength - (headLength + tailLength + 1) < 2)
                         return false;
                 }
             }

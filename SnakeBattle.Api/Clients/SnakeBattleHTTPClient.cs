@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using WebSocketCore;
 
 namespace SnakeBattle.Api.Clients
@@ -10,13 +11,17 @@ namespace SnakeBattle.Api.Clients
         private WebSocket _socket;
 
         private readonly Func<GameBoard, SnakeAction?> _callback;
+        private readonly Action<long> _timeOutCallback;
+
         private readonly string server;
         private bool exit;
+        public bool save;
         static readonly Stopwatch stopwatch = new Stopwatch();
 
-        public SnakeBattleHTTPClient(string url, Func<GameBoard, SnakeAction?> callback)
+        public SnakeBattleHTTPClient(string url, Func<GameBoard, SnakeAction?> callback, Action<long> timeOutCallback)
         {
             _callback = callback;
+            _timeOutCallback = timeOutCallback;
 
             server = url.Replace("http", "ws").Replace("board/player/", "ws?user=").Replace("?code=", "&code=");
             this._socket = new WebSocket(server);
@@ -45,7 +50,7 @@ namespace SnakeBattle.Api.Clients
             _socket.Close();
         }
 
-        private void Socket_OnError(object sender, ErrorEventArgs e)
+        private void Socket_OnError(object sender, WebSocketCore.ErrorEventArgs e)
         {
             Console.WriteLine($"Error: {e.Message}");
         }
@@ -78,6 +83,12 @@ namespace SnakeBattle.Api.Clients
             }
 
             var boardString = response.Substring(RESPONSE_PREFIX.Length);
+            if (save)
+            {
+                File.WriteAllText(Path.Combine(@"C:\Users\Администратор\Desktop", $"board_{DateTime.Now:hhMMss}"), boardString);
+                save = false;
+            }
+
             var board = new GameBoard(boardString);
             var action = _callback(board);
 
@@ -86,7 +97,10 @@ namespace SnakeBattle.Api.Clients
             try
             {
                 ((WebSocket)sender).Send(answer);
+                stopwatch.Stop();
                 Console.WriteLine($"Take {stopwatch.ElapsedMilliseconds} ms");
+                if (stopwatch.ElapsedMilliseconds >= 1000)
+                    _timeOutCallback(stopwatch.ElapsedMilliseconds);
             }
             catch (Exception ex)
             {

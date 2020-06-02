@@ -5,7 +5,7 @@ namespace SnakeBattle.AI
 {
     internal static class MeDetector
     {
-        internal static (int headLength, int tailLength, bool rage) GetMe(GameBoard gameBoard, int x, int y)
+        internal static (int headLength, int tailLength, bool isEvilNear) GetMe(GameBoard gameBoard, int x, int y)
         {
             int length1;
             bool head1;
@@ -14,27 +14,24 @@ namespace SnakeBattle.AI
             bool head2;
             bool evil2;
 
-            switch (gameBoard.Board[x, y])
+            var el = gameBoard.Board[x, y];
+            switch (el)
             {
                 //---heads---
                 case BoardElement.HeadDown:
                     GetMeShakeInternal(gameBoard, x, y - 1, x, y, out length1, out head1, out evil1);
-                    return (0, length1, false);
+                    return (0, length1, evil1);
                 case BoardElement.HeadUp:
                     GetMeShakeInternal(gameBoard, x, y + 1, x, y, out length1, out head1, out evil1);
-                    return (0, length1, false);
+                    return (0, length1, evil1);
                 case BoardElement.HeadLeft:
                     GetMeShakeInternal(gameBoard, x + 1, y, x, y, out length1, out head1, out evil1);
-                    return (0, length1, false);
+                    return (0, length1, evil1);
                 case BoardElement.HeadRight:
                     GetMeShakeInternal(gameBoard, x - 1, y, x, y, out length1, out head1, out evil1);
-                    return (0, length1, false);
+                    return (0, length1, evil1);
                 case BoardElement.HeadEvil:
-                    var body = Helpers.FindNear(gameBoard, x, y, Lists.bodies);
-                    if(body.X == -1)
-                        body = Helpers.FindNear(gameBoard, x, y, Lists.tails);
-                    GetMeShakeInternal(gameBoard, body.X, body.Y, x, y, out length1, out head1, out evil1);
-                    return (0, length1, true);
+                    throw new SnakeException("Non-masked evil head", gameBoard);
                 //---tails----
                 case BoardElement.TailEndDown:
                     GetMeShakeInternal(gameBoard, x, y - 1, x, y, out length1, out head1, out evil1);
@@ -53,54 +50,55 @@ namespace SnakeBattle.AI
                     GetMeShakeInternal(gameBoard, x - 1, y, x, y, out length1, out head1, out evil1);
                     GetMeShakeInternal(gameBoard, x + 1, y, x, y, out length2, out head2, out evil2);
                     if(head1)
-                        return (length1, length2, evil1);
+                        return (length1, length2, evil1 || evil2);
                     else
-                        return (length2, length1, evil2);
+                        return (length2, length1, evil1 || evil2);
                 case BoardElement.BodyVertical:
                     GetMeShakeInternal(gameBoard, x, y + 1, x, y, out length1, out head1, out evil1);
                     GetMeShakeInternal(gameBoard, x, y - 1, x, y, out length2, out head2, out evil2);
                     if (head1)
-                        return (length1, length2, evil1);
+                        return (length1, length2, evil1 || evil2);
                     else
-                        return (length2, length1, evil2);
+                        return (length2, length1, evil1 || evil2);
                 case BoardElement.BodyLeftDown:
                     GetMeShakeInternal(gameBoard, x - 1, y, x, y, out length1, out head1, out evil1);
                     GetMeShakeInternal(gameBoard, x, y + 1, x, y, out length2, out head2, out evil2);
                     if (head1)
-                        return (length1, length2, evil1);
+                        return (length1, length2, evil1 || evil2);
                     else
-                        return (length2, length1, evil2);
+                        return (length2, length1, evil1 || evil2);
                 case BoardElement.BodyLeftUp:
                     GetMeShakeInternal(gameBoard, x - 1, y, x, y, out length1, out head1, out evil1);
                     GetMeShakeInternal(gameBoard, x, y - 1, x, y, out length2, out head2, out evil2);
                     if (head1)
-                        return (length1, length2, evil1);
+                        return (length1, length2, evil1 || evil2);
                     else
-                        return (length2, length1, evil2);
+                        return (length2, length1, evil1 || evil2);
                 case BoardElement.BodyRightDown:
                     GetMeShakeInternal(gameBoard, x + 1, y, x, y, out length1, out head1, out evil1);
                     GetMeShakeInternal(gameBoard, x, y + 1, x, y, out length2, out head2, out evil2);
                     if (head1)
-                        return (length1, length2, evil1);
+                        return (length1, length2, evil1 || evil2);
                     else
-                        return (length2, length1, evil2);
+                        return (length2, length1, evil1 || evil2);
                 case BoardElement.BodyRightUp:
                     GetMeShakeInternal(gameBoard, x + 1, y, x, y, out length1, out head1, out evil1);
                     GetMeShakeInternal(gameBoard, x, y - 1, x, y, out length2, out head2, out evil2);
                     if (head1)
-                        return (length1, length2, evil1);
+                        return (length1, length2, evil1 || evil2);
                     else
-                        return (length2, length1, evil2);
+                        return (length2, length1, evil1 || evil2);
                 default:
-                    throw new Exception("Not a me");
+                    throw new SnakeException($"Not a me at {x}:{y}", gameBoard);
             }
         }
 
-        private static void GetMeShakeInternal(GameBoard gameBoard, int x, int y, int prevx, int prevy, out int length, out bool head, out bool evil)
+        private static void GetMeShakeInternal(GameBoard gameBoard, int x, int y, int prevx, int prevy, out int length, out bool head, out bool isEvilNear)
         {
             Element e1;
             Element e2;
             var el = gameBoard.Board[x, y];
+            isEvilNear = Helpers.IsNear(gameBoard, x, y, BoardElement.EnemyHeadEvil, 5);
 
             switch (el)
             {
@@ -111,12 +109,10 @@ namespace SnakeBattle.AI
                 case BoardElement.HeadRight:
                     length = 1;
                     head = true;
-                    evil = false;
                     return;
                 case BoardElement.HeadEvil:
                     length = 1;
                     head = true;
-                    evil = true;
                     return;
                 //---tails----
                 case BoardElement.TailEndDown:
@@ -125,7 +121,6 @@ namespace SnakeBattle.AI
                 case BoardElement.TailEndRight:
                     length = 1;
                     head = false;
-                    evil = false;
                     return;
                 //bodies
                 case BoardElement.BodyHorizontal:
@@ -153,7 +148,11 @@ namespace SnakeBattle.AI
                     e2 = new Element(x, y - 1);
                     break;
                 default:
-                    throw new Exception($"Not a me: {el}");
+                    throw new SnakeException($"Not a me: {el}");
+                    //length = 0;
+                    // head = false;
+                   // evil = false;
+                    //return;
             }
 
             if(e1.X != prevx || e1.Y != prevy)
@@ -162,7 +161,7 @@ namespace SnakeBattle.AI
 
                 length = length1 + 1;
                 head = head1;
-                evil = evil1;
+                isEvilNear |= evil1;
                 return;
             }
             else
@@ -171,7 +170,7 @@ namespace SnakeBattle.AI
 
                 length = length2 + 1;
                 head = head2;
-                evil = evil2;
+                isEvilNear |= evil2;
                 return;
             }
         }

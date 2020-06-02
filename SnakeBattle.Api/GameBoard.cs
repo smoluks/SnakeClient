@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Text;
 
 namespace SnakeBattle.Api
 {
@@ -18,7 +20,7 @@ namespace SnakeBattle.Api
 
         public Element Head;
 
-        public BoardElement HeadType;
+        public BoardElement HeadType = BoardElement.None;
 
         public Element Tail;
 
@@ -31,6 +33,21 @@ namespace SnakeBattle.Api
         public int MyLength = 2;
 
         public Element Nyamka;
+
+        public override string ToString()
+        {
+            StringBuilder s = new StringBuilder();
+
+            for (int i = 0; i < Size; i++)
+            {
+                for (int j = 0; j < Size; j++)
+                {
+                    s.Append((char)Board[j, i]);
+                }
+            }
+
+            return s.ToString();
+        }
 
         public GameBoard(string boardString)
         {

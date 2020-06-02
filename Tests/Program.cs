@@ -6,6 +6,8 @@ namespace Tests
 {
     class Program
     {
+        public static SnakeAction LastMove { get; private set; }
+
         static void Main(string[] args)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -15,14 +17,16 @@ namespace Tests
 
         private static void TestMyMovement()
         {
-            var gameBoard = new GameBoard(Boards.realDiagonal);
-            SnakeAction lastmove = SnakeAction.Right;
+            var gameBoard = new GameBoard(Boards.Current);
+            SnakeAction lastmove = SnakeAction.Left;
 
             while (true)
             {
+                Movement.MakeEnemyMove(gameBoard);
+
                 Console.Clear();
                 Graphical.WriteField(gameBoard);
-                Console.WriteLine($"{gameBoard.EvilTicks} {gameBoard.HasStone}");
+                Console.WriteLine($"{gameBoard.Head.X}:{gameBoard.Head.Y}:{gameBoard.HeadType}: {gameBoard.MyLength} {gameBoard.EvilTicks} {gameBoard.HasStone}");
 
                 bool possible = false;
                 SnakeAction action = SnakeAction.ActDown;
@@ -57,7 +61,7 @@ namespace Tests
                 lastmove = action;
 
                 gameBoard = new GameBoard(gameBoard);
-                Movement.MakeMyMove(gameBoard, action, ref newHead);
+                Movement.MakeMyMove(gameBoard, action, ref newHead);                
             }
         }
     }

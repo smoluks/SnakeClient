@@ -9,7 +9,7 @@ namespace Client
 {
     class Program
     {
-        const string PATH = "http://codebattle-pro-2020s1.westeurope.cloudapp.azure.com/codenjoy-contest/board/player/70ul7d6wylhlf9zav078?code=7439655811837234352&gameName=snakebattle";
+        const string PATH = "http://codebattle-pro-2020s1.westeurope.cloudapp.azure.com/codenjoy-contest/board/player/uf808qnza8qd66wv6vr5?code=3433622376354117498&gameName=snakebattle";
 
         private static SnakeBattleHTTPClient client;
 
@@ -28,7 +28,7 @@ namespace Client
 
             do
             {
-                client = new SnakeBattleHTTPClient(PATH, StepHandler);
+                client = new SnakeBattleHTTPClient(PATH, StepHandler, TimeoutError);
             }
             while(!client.Connect());
             Console.WriteLine($"Connected");
@@ -49,9 +49,18 @@ namespace Client
                         AIController.maxDeep--;
                         Console.WriteLine($"Set depth {AIController.maxDeep}");
                         break;
+                    case ConsoleKey.Enter:
+                        client.save = true;
+                        break;
                 }
             }
             while (true);
+        }
+
+        private static void TimeoutError(long time)
+        {
+            AIController.maxDeep--;
+            Console.WriteLine($"Depth autodecrement {AIController.maxDeep}");
         }
 
         static bool cacheIsClean = true;
@@ -59,13 +68,13 @@ namespace Client
         private static SnakeAction? StepHandler(GameBoard gameBoard)
         {
             
-            if (gameBoard.Head.X == -1)
+            if (gameBoard.Head.X == -1 || gameBoard.HeadType == BoardElement.HeadDead)
             {
+                Console.WriteLine($"Waiting to start game");
                 if (!cacheIsClean)
                 {
                     GC.Collect();
-                    StateContoller.CleanState();
-                    Console.WriteLine("Waiting to start game");
+                    StateContoller.CleanState();                    
                 }
 
                 cacheIsClean = true;

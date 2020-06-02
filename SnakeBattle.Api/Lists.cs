@@ -16,7 +16,8 @@
                 (el == BoardElement.EnemyHeadLeft) ||
                 (el == BoardElement.EnemyHeadRight) ||
                 (el == BoardElement.EnemyHeadUp) ||
-                (el == BoardElement.EnemyHeadEvil);
+                (el == BoardElement.EnemyHeadEvil)                ||
+                (el == BoardElement.EnemyHeadDead);
         }
 
         public static readonly BoardElement[] enemyBodies = new BoardElement[] {
@@ -55,7 +56,7 @@
                 (el == BoardElement.EnemyTailInactive);
         }
 
-        static readonly BoardElement[] heads = new BoardElement[] {
+        public static readonly BoardElement[] heads = new BoardElement[] {
             BoardElement.HeadDown,
             BoardElement.HeadLeft,
             BoardElement.HeadRight,

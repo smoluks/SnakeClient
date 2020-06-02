@@ -1,6 +1,7 @@
 ﻿using SnakeBattle.Api;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace SnakeBattle.AI
@@ -14,10 +15,11 @@ namespace SnakeBattle.AI
             for (int i = 0; i < 4; i++)
             {
                 SnakeAction action = (SnakeAction)i;
+                var newBoard = new GameBoard(gameBoard);
 
-                if (PossiblyFilter.IsMovePossible(gameBoard, action, lastMove, true, out Element newHead))
+                if (PossiblyFilter.IsMovePossible(newBoard, action, lastMove, true, out Element newHead))
                 {
-                    tasks.Add(GetActionWeight(gameBoard, newHead, action, 0), action);
+                    tasks.Add(GetActionWeight(newBoard, newHead, action, 0), action);
                 }
             }
 
@@ -35,13 +37,14 @@ namespace SnakeBattle.AI
                 var action = tasks[completedTask];
                 long weight;
                 if (completedTask.IsFaulted)
+                {
                     weight = long.MinValue;
+#if DEBUG
+                    Graphical.WriteToLog(gameBoard);
+#endif
+                }
                 else
                     weight = completedTask.Result;
-
-#if (DEBUG)
-                Console.WriteLine($"{action} {weight}");
-#endif
 
                 if (Helpers.IsDirectionBaff(action, ref gameBoard.Head, ref gameBoard.Tail))
                     weight += 1;
@@ -65,29 +68,54 @@ namespace SnakeBattle.AI
         // Call recursively
         private static async Task<long> GetActionWeight(GameBoard gameBoard, Element newHead, SnakeAction action, int depth)
         {
-            //investigate new position
-            var currentRate = Rates.GetElementRate(gameBoard, ref newHead) * (20 - depth);
+            long currentRate = Rates.GetElementRate(gameBoard, ref newHead);
             if (currentRate == long.MinValue)
                 return long.MinValue;
+
+            //investigate new position
+            //if (gameBoard.EvilTicks == 0)
+            //{
+            //    var (_, _, isEvilNear) = MeDetector.GetMe(gameBoard, gameBoard.Head.X, gameBoard.Head.Y);
+            //    if (isEvilNear)
+            //        currentRate -= 10;
+            //}            
+
+            currentRate *= (15 - depth);
 
             if (depth == maxDeep)
                 return currentRate;
 
             //move me
-            var newGameBoard = new GameBoard(gameBoard);
-            Movement.MakeMyMove(newGameBoard, action, ref newHead);
+#if DEBUG
+            try
+            {
+#endif
+                Movement.MakeMyMove(gameBoard, action, ref newHead);
 
-            //add enemy predictions
-            //Movement.MakeEnemyMove(newGameBoard);
+                //add enemy predictions
+
+#if DEBUG
+            }
+            catch (Exception)
+            {
+                Graphical.WriteToLog(gameBoard);
+                throw;
+            }
+#endif
+
+            Movement.MakeEnemyMove(gameBoard);
 
             //calculate my variants
             var tasks = new List<Task<long>>();
             for (int i = 0; i < 4; i++)
             {
                 SnakeAction a = (SnakeAction)i;
+                var newBoard = new GameBoard(gameBoard);                
 
-                if (PossiblyFilter.IsMovePossible(newGameBoard, a, action, false, out var newNewHead))
-                    tasks.Add(GetActionWeight(newGameBoard, newNewHead, a, depth + 1));
+                if (PossiblyFilter.IsMovePossible(newBoard, a, action, false, out var newNewHead))
+                {
+                    tasks.Add(GetActionWeight(newBoard, newNewHead, a, depth + 1));
+                }
             }
 
             if (tasks.Count == 0)
@@ -98,11 +126,16 @@ namespace SnakeBattle.AI
             {
                 var completedTask = await Task.WhenAny(tasks);
                 tasks.Remove(completedTask);
-
-                var weight = completedTask.Result;
-                if (weight != long.MinValue && myVariantsScore < weight)
+#if DEBUG
+                if (completedTask.IsFaulted)
                 {
-                    myVariantsScore = weight;
+                    Graphical.WriteToLog(gameBoard);
+                    throw completedTask.Exception;
+                }
+#endif
+                if (!completedTask.IsFaulted && completedTask.Result != long.MinValue && myVariantsScore < completedTask.Result)
+                {
+                    myVariantsScore = completedTask.Result;
                 }
             } while (tasks.Count > 0);
 
@@ -112,6 +145,6 @@ namespace SnakeBattle.AI
             currentRate += myVariantsScore;
 
             return currentRate;
-        }        
+        }
     }
 }
